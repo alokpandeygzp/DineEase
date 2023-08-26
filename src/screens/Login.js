@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 
 export default function Login() {
   const [credentials, setCredentials] = useState({
@@ -23,12 +25,12 @@ export default function Login() {
       },
       body: JSON.stringify({
         email: credentials.email,
-        password: credentials.password,
+        password: credentials.password
       }),
     });
 
     const json = await response.json();
-    console.log(json);
+    console.log("Login::- ",json);
 
     if (!json.success) {
       alert("Enter valid credentials");
@@ -38,6 +40,8 @@ export default function Login() {
       console.log(localStorage.getItem("userEmail"));
       localStorage.setItem("authToken",json.authToken);
       console.log(localStorage.getItem("authToken"));
+      localStorage.setItem("userRole",json.userRole);
+      console.log(localStorage.getItem("userRole"));
       navigate("/");
     }
   };
@@ -48,6 +52,9 @@ export default function Login() {
 
   return (
     <div>
+      <div><Navbar /></div>
+      <br/><h1><center>Sign In</center></h1>
+
       <div className="container">
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
@@ -87,7 +94,8 @@ export default function Login() {
             I'm a new user
           </Link>
         </form>
-      </div>
+      </div><br/><br/><br/><br/><br/><br/><br/>
+      <div><Footer /></div>
     </div>
   );
 }

@@ -4,6 +4,7 @@ import Badge from 'react-bootstrap/Badge'
 import Modal from "../Modal";
 import Cart from "../screens/Cart";
 import {useCart} from "./ContextReducer";
+import DiningIcon from '@mui/icons-material/LocalDining';
 
 export default function Navbar() {
 
@@ -22,7 +23,10 @@ export default function Navbar() {
   <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
     <div className="container-fluid">
       <Link className="navbar-brand fs-2 fw-bold" to="/">
-        GoFood
+      
+      <Badge pill-bg="danger"><DiningIcon className="fs-1"/></Badge>
+      &nbsp;&nbsp;
+      DineEase
       </Link>
       <button
         className="navbar-toggler"
@@ -48,6 +52,20 @@ export default function Navbar() {
                 My Orders
               </Link>
             </li>
+          )}
+          {localStorage.getItem("authToken") && (localStorage.getItem("userRole")==="admin" &&
+          <>
+            <li className="nav-item">
+              <Link className="nav-link fs-5" aria-current="page" to="/admin">
+                Admin's Dashboard
+              </Link>
+            </li>
+            <li className="nav-item">
+            <Link className="nav-link fs-5" aria-current="page" to="/addproduct">
+              Add Product
+            </Link>
+          </li>
+          </>
           )}
         </ul>
         {!localStorage.getItem("authToken") ? (

@@ -1,5 +1,7 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 
 export default function Signup() {
   const [credentials, setCredentials] = useState({
@@ -8,10 +10,12 @@ export default function Signup() {
     password: "",
     geolocation: "",
   });
+  
+  let navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(JSON.stringify({name:credentials.name,email:credentials.email,password:credentials.password,location:credentials.geolocation}));
+    // console.log(JSON.stringify({name:credentials.name,email:credentials.email,password:credentials.password,location:credentials.geolocation}));
     const response = await fetch("http://localhost:5000/api/createuser", {
       method: "POST",
       headers: {
@@ -31,6 +35,10 @@ export default function Signup() {
     if (!json.success) {
       alert("Enter valid credentials");
     }
+    if (json.success) {
+      alert("Account created successfully");
+      navigate("/login");
+    }
   }
 
   const onChange = (event) => {
@@ -39,6 +47,8 @@ export default function Signup() {
 
   return (
     <>
+    <div><Navbar /></div>
+      <br/><h1><center>Register Yourself</center></h1>
       <div className="container">
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
@@ -104,6 +114,7 @@ export default function Signup() {
           </Link>
         </form>
       </div>
+      <div><Footer /></div>
     </>
   );
 }

@@ -31,6 +31,7 @@ router.post(
         password: secPassword,
         email: req.body.email,
         location: req.body.location,
+        role: "user"
       });
       res.json({ success: true });
     } catch (error) {
@@ -57,6 +58,7 @@ router.post(
     try {
       let userData = await User.findOne({ email });
       
+
       if (!userData) {
         return res
           .status(400)
@@ -74,13 +76,17 @@ router.post(
           .json({ errors: "Try logging in with correct credentials" });
       }
       
+      let userRole = userData.role;
+
+      // console.log(userEmail,"->",userPass,"->",userRole);
+
       const data = {
         user:{
           id:userData.id
         }
       }
       const authToken = jwt.sign(data, jwtSecret)
-      return res.json({ success: true, authToken:authToken })
+      return res.json({ success: true, authToken:authToken, userRole:userRole })
 
     } catch (error) {
       console.log(error);

@@ -1,34 +1,72 @@
 import React, { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import Card from "../components/Card";
 
-export default function Home() {
+export default function AdminPanel() {
   const [foodCat, setFoodCat] = useState([]);
   const [foodItem, setFoodItem] = useState([]);
-  const [search,setSearch] = useState('');
+  const [search, setSearch] = useState("");
 
-  const loadData = async () => {
-    let response = await fetch("http://localhost:5000/api/foodData", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+  const handleDelete = async (itemId) => {
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/food_items/${itemId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-    const data = await response.json();
-    // console.log(response[0],response[1]);
+      if (response.ok) {
+        alert("Item Deleted");
+        setFoodItem((prevFoodItems) =>
+          prevFoodItems.filter((item) => item._id !== itemId)
+        );
+        
+        const deletedItems = JSON.parse(localStorage.getItem("deletedItems")) || []; // Retrieve the array of deleted item IDs from local storage
+        deletedItems.push(itemId); // Add the deleted item ID to the array
+        localStorage.setItem("deletedItems", JSON.stringify(deletedItems)); // Store the updated array in local storage
 
-    const deletedItems = JSON.parse(localStorage.getItem("deletedItems")) || []; // Retrieve the array of deleted item IDs from local storage
-    setFoodItem(data[0].filter((item) => !deletedItems.includes(item._id))); // Exclude the deleted items from the fetched data
-    setFoodCat(data[1]);
-
+      } else {
+        alert("Item not deleted");
+      }
+    } catch (error) {
+      alert("Item not deleted");
+    }
   };
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  const fetchData = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/api/foodData", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await response.json();
+  
+      const deletedItems = JSON.parse(localStorage.getItem("deletedItems")) || [];
+      const addedItems = JSON.parse(localStorage.getItem("addedItems")) || [];
+  
+      const filteredItems = data[0].filter((item) => !deletedItems.includes(item._id));
+      const updatedFoodItems = [...filteredItems, ...addedItems];
+  
+      setFoodItem(updatedFoodItems);
+      setFoodCat(data[1]);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+  
 
+  useEffect(() => {
+    const addedItems = JSON.parse(localStorage.getItem("addedItems")) || [];
+    setFoodItem((prevFoodItems) => [...prevFoodItems, ...addedItems]);
+    fetchData();
+  }, []);
+  
   return (
     <div>
       <div>
@@ -120,7 +158,6 @@ export default function Home() {
         {foodCat !== []
           ? foodCat.map((data) => {
               return (
-                
                 <div className="row mb-3">
                   <div key={data._id} className="fs-3 m-3">
                     {data.CategoryName}
@@ -128,17 +165,44 @@ export default function Home() {
                   <hr />
                   {foodItem !== [] ? (
                     foodItem
-                      .filter((item) => (item.CategoryName === data.CategoryName) && (item.name.toLowerCase().includes(search.toLocaleLowerCase()))) 
+                      .filter(
+                        (item) =>
+                          item.CategoryName === data.CategoryName &&
+                          item.name
+                            .toLowerCase()
+                            .includes(search.toLocaleLowerCase())
+                      )
                       .map((filterItems) => {
                         return (
                           <div
                             key={filterItems._id}
                             className="col-12 col-md-6 col-lg-3"
                           >
-                            <Card
-                              foodItem={filterItems}
-                              options={filterItems.options[0]}
-                            />
+                            <div>
+                              <div
+                                className="card mt-3"
+                                style={{ width: "18rem", maxHeight: "360px" }}
+                              >
+                                <img
+                                  src={filterItems.img}
+                                  className="card-img-top"
+                                  alt="..."
+                                  style={{ height: "120px", objectFit: "fill" }}
+                                />
+                                <div className="card-body">
+                                  <h5 className="card-title">
+                                    {filterItems.name}
+                                  </h5>
+                                  <hr />
+                                  <button
+                                    className="btn btn-success justify-center ms-2"
+                                    onClick={() => handleDelete(filterItems._id)}
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
                           </div>
                         );
                       })
@@ -146,8 +210,6 @@ export default function Home() {
                     <div>No such data found!</div>
                   )}
                 </div>
-
-                
               );
             })
           : ""}
